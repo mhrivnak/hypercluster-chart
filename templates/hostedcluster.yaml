@@ -1,0 +1,36 @@
+apiVersion: hypershift.openshift.io/v1alpha1
+kind: HostedCluster
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  issuerURL: "https://kubernetes.default.svc"
+  release:
+    image: {{ .Values.releaseImage }}
+  pullSecret:
+    name: {{ .Release.Name }}-pullsecret
+  sshKey:
+    name: {{ .Release.Name }}-sshkey
+  networking:
+    serviceCIDR: "172.31.0.0/16"
+    podCIDR: "10.132.0.0/14"
+    machineCIDR: {{ .Values.machineCIDR }}
+    networkType: "OpenShiftSDN"
+  platform:
+    type: "None"
+  infraID: {{ .Values.clusterName }}
+  dns:
+    baseDomain: {{ .Values.baseDomain }}
+  services:
+  - service: APIServer
+    servicePublishingStrategy:
+      type: NodePort
+      nodePort:
+        address: api.{{ .Values.clusterName }}.{{ .Values.baseDomain }}
+  - service: OAuthServer
+    servicePublishingStrategy:
+      type: Route
+  - service: Ignition
+    servicePublishingStrategy:
+      type: NodePort
+      nodePort:
+        address: api.{{ .Values.clusterName }}.{{ .Values.baseDomain }}
